@@ -1,0 +1,40 @@
+---
+- hosts: all
+  become: true
+  tasks:
+
+    - name: installing webserver in ubuntu
+      apt:
+         name: apache2
+         state: present
+         update_cache: yes
+      when: ansible_os_family == "Debian"
+
+    - name: installing webserver in rhel
+      yum:
+         name: httpd
+         state: present
+         update_cache: yes
+      when: ansible_os_family == "RedHat"
+
+    - name: coping file
+      template:
+          src: /home/devops/mine.html.j2
+          dest: /var/www/html/index.html
+      notify:
+             - service restarting in ubuntu
+             - service restarting in rhel
+
+  handlers:
+
+    - name: service restarting in ubuntu
+      service:
+         name: apache2
+         state: restarted
+      when: ansible_os_family == "Debian"
+
+    - name: service restarting in rhel
+      service:
+         name: httpd
+         state: restarted
+      when: ansible_os_family == "RedHat"
